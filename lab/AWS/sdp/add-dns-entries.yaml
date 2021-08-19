@@ -1,0 +1,20 @@
+---
+- hosts: all
+  gather_facts: yes
+  vars_files:
+    - ../windowsDC/tf_ansible_vars_file.yml
+    - tf_ansible_vars_file.yml
+    - api.yml
+
+  tasks:  
+
+   - name: Add A record for newly build server
+     win_shell: "Add-DnsServerResourceRecordA -Name {{ tf_hostname }} -ZoneName {{ tf_dc_domain }} -AllowUpdateAny -IPv4Address {{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }} -TimeToLive 01:00:00"
+     delegate_to: "{{ tf_dc_public_ip }}"
+     vars:
+       ansible_connection: "winrm"
+       ansible_winrm_server_cert_validation: "ignore"
+       ansible_port: 5985       
+       ansible_winrm_scheme: "http"
+       ansible_user: "{{ tf_dc_windows_localadmin }}"
+       ansible_password: "{{ tf_dc_windows_localadmin_pw }}"

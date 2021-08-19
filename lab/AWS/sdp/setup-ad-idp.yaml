@@ -1,0 +1,50 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - config.cfg
+    - ../windowsDC/tf_ansible_vars_file.yml
+    - tf_ansible_vars_file.yml
+    - api.yml
+  vars:
+    controller_api_url: "https://{{ tf_cnt1_public_ip }}:8443/admin"
+
+  tasks:
+    - name: Add Windows AD as IdP
+      uri:
+        url: "{{ controller_api_url }}/identity-providers"
+        method: POST
+        validate_certs: no
+        body_format: json
+        body: |
+          {
+          "id": "{{ 99999999 | random | to_uuid }}",
+          "adminDistinguishedName": "CN={{ tf_dc_windows_localadmin }},CN=Users,DC=sdp,DC=lab",
+          "adminPassword": "{{ tf_dc_windows_localadmin_pw }}",
+          "adminProvider": true,
+          "dnsSearchDomains": [
+              "{{ tf_dc_domain }}"
+          ],
+          "dnsServers": [
+              "{{ tf_dc_private_ip }}"
+          ],
+          "hostnames": [
+              "{{ tf_dc_hostname }}.{{ tf_dc_domain }}"
+          ],
+          "ipPoolV4": "f572b4ab-7963-4a90-9e5a-3bf033bfe2cc",
+          "membershipFilter": "(objectCategory=group)",
+          "name": "Windows AD",
+          "notes": "Built using automation script",
+          "port": 636,
+          "sslEnabled": true,
+          "type": "Ldap"
+          }
+        timeout: 10
+        headers:
+         Accept: "application/vnd.appgate.peer-v14+json"
+         Authorization: "Bearer {{ apitoken }}"
+      register: result
+
+#    - name: debug output
+#      debug: msg="{{ result }}"

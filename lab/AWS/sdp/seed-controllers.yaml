@@ -1,0 +1,12 @@
+---
+
+
+- name: seed
+  hosts: primary_controller
+  gather_facts: no
+  vars_files:
+    - config.cfg
+    - ../windowsDC/tf_ansible_vars_file.yml
+    - tf_ansible_vars_file.yml
+  roles:
+    - aws-controller-seed

@@ -1,0 +1,14 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "gusztavvargadr/windows-10"
+
+
+
+if ARGV[0] == 'up' || ARGV[0] == 'provision'
+    print "Please enter the version of Appgate Client to install.\n"
+    print "5.0 5.1 5.2 5.3\n"
+    print "Version (5.3): "
+    $sdpversion = STDIN.gets.chomp
+end
+
+  config.vm.provision "shell", :path => 'provision/install.ps1', :args => $sdpversion
+end

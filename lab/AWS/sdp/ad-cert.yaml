@@ -1,0 +1,39 @@
+---
+- hosts: primary_controller
+  gather_facts: no
+  vars_files:
+    - config.cfg
+    - ../windowsDC/tf_ansible_vars_file.yml
+    - tf_ansible_vars_file.yml
+    - api.yml
+  vars:
+    controller_api_url: "https://{{ tf_cnt1_public_ip }}:8443/admin"
+
+  tasks:
+    - name: Get the cert from ldap port
+      get_certificate:
+        host: "{{ tf_dc_private_ip }}"
+        port: 636
+      register: cert
+
+    
+
+    - name: Add trusted Cert
+      uri:
+        url: "{{ controller_api_url }}/trusted-certificates"
+        method: POST
+        validate_certs: no
+        body_format: json
+        body: "{{ post_data | to_json }}"
+        timeout: 10
+        headers:
+         Accept: "application/vnd.appgate.peer-v14+json"
+         Authorization: "Bearer {{ apitoken }}"
+      vars:
+        post_data:
+          "id": "{{ 99999999 | random | to_uuid }}"
+          "name": "Windows AD Cert"
+          "pem": "{{ cert.cert }}"
+          "notes": "Built using automation script"
+      register: result
+

@@ -1,0 +1,75 @@
+---
+- hosts: primary_controller
+  gather_facts: no
+  vars_files:
+    - config.cfg
+    - ../windowsDC/tf_ansible_vars_file.yml
+    - tf_ansible_vars_file.yml
+    - api.yml
+  vars:
+    controller_api_url: "https://{{ tf_cnt1_public_ip }}:8443/admin"
+
+  tasks:
+
+  # - name: Get entitlement
+  #   uri:
+  #     url: "{{ controller_api_url }}/entitlements"
+  #     method: GET
+  #     validate_certs: no
+  #     body_format: json
+  #     body: ""
+  #     timeout: 10
+  #     headers:
+  #       Accept: "application/vnd.appgate.peer-v14+json"
+  #       Authorization: "Bearer {{ apitoken }}"
+  #   register: result
+
+  # - name: Dump
+  #   debug: msg="{{ result }}"
+        
+  - name:  Wait for UI to come up
+    wait_for:
+      port: 8443
+      state: started
+
+
+  - name: Add entitlement
+    uri:
+      url: "{{ controller_api_url }}/entitlements"
+      method: POST
+      validate_certs: no
+      body_format: json
+      body: "{{ post_data | to_json }}"
+      timeout: 10
+      headers:
+       Accept: "application/vnd.appgate.peer-v14+json"
+       Authorization: "Bearer {{ apitoken }}"
+    vars:
+      post_data:
+        "id": "{{ 99999999 | random | to_uuid }}"
+        "name": "Linux Webserver"
+        "notes": "Allows access to internal-only webserver"
+        "site": "8a4add9e-0e99-4bb1-949c-c9faf9a49ad4"
+        actions:
+        - action: allow
+          hosts:
+          - "{{ tf_webserver_private_ip }}"
+          id: 66422a6f-2c13-35ef-86ec-08b6f5852dfd
+          monitor:
+            enabled: false
+            timeout: 30
+          ports:
+          - "80"
+          - "443"
+          subtype: tcp_up
+          type: IpAccess
+        conditions:
+        - ee7b7e6f-e904-4b4f-a5ec-b3bef040643e
+    register: result
+    until: result.status == 200
+    retries: 30
+    delay: 10
+
+  # - name: Dump
+  #   debug: msg="{{ result }}"
+

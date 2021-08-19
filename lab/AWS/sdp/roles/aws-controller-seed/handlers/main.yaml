@@ -1,0 +1,7 @@
+---
+
+- name: reboot appliance
+  become: true
+  become_user: root
+  become_method: sudo 
+  shell: reboot

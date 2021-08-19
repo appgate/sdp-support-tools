@@ -1,0 +1,41 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - config.cfg
+    - ../windowsDC/tf_ansible_vars_file.yml
+    - tf_ansible_vars_file.yml
+  vars:
+    controller_api_url: "https://{{ tf_cnt1_public_ip }}:8443/admin"
+
+  tasks:
+
+    - name: login and get token
+      uri:
+        url: "{{ controller_api_url }}/login"
+        method: POST
+        validate_certs: no
+        body_format: json
+        body: >
+          {
+          "providerName": "local",
+          "username": "{{ sdpadmin_user }}",
+          "password": "{{ sdpadmin_pw }}",
+          "deviceId": "4c07bc67-57ea-42dd-b702-c2d6c45419fc"
+          }
+        timeout: 10
+        headers:
+         Accept: "application/vnd.appgate.peer-v14+json"
+      register: loginvar
+      until: loginvar.status == 200
+      retries: 30 
+      delay: 10 
+
+    - name: output to file
+      copy:
+        content: |
+          apitoken: "{{ loginvar.json['token'] }}"
+          apitoken_expires: "{{ loginvar.json['expires'] }}" 
+        dest: api.yml
+

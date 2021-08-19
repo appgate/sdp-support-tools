@@ -1,0 +1,133 @@
+---
+- hosts: gateways
+  gather_facts: no
+  vars_files:
+    - config.cfg
+    - ../windowsDC/tf_ansible_vars_file.yml
+    - tf_ansible_vars_file.yml
+    - api.yml
+  vars:
+    controller_api_url: "https://{{ tf_cnt1_public_ip }}:8443/admin"
+
+  tasks:
+
+  - name:  Create UUID for Gateway ID
+    set_fact: gateway_id="{{ 99999999 | random | to_uuid }}"
+
+  - name: Add Gateway to collective
+    uri:
+      url: "{{ controller_api_url }}/appliances"
+      method: POST
+      validate_certs: no
+      body_format: json
+      body: "{{ post_data | to_json }}"
+      timeout: 10
+      headers:
+       Accept: "application/vnd.appgate.peer-v14+json"
+       Authorization: "Bearer {{ apitoken }}"
+    vars:
+      post_data:
+        id: "{{ gateway_id }}"
+        name: "gateway01"
+        notes: "Built using Automation process"
+        hostname: "gateway01.{{ tf_dc_domain }}"
+        site: "8a4add9e-0e99-4bb1-949c-c9faf9a49ad4"
+        clientInterface:
+          proxyProtocol: false
+          hostname: "{{ tf_gw1_public_dns }}"
+          httpsPort: 443
+          dtlsPort: 443
+          allowSources:
+          - address: 0.0.0.0
+            netmask: 0
+          - address: "::"
+            netmask: 0
+        peerInterface:
+          hostname: "gateway01.{{ tf_dc_domain }}"
+          httpsPort: 444
+          allowSources:
+          - address: 0.0.0.0
+            netmask: 0
+          - address: "::"
+            netmask: 0
+        networking:
+          hosts: []
+          nics:
+          - enabled: true
+            name: eth0
+            ipv4:
+              dhcp:
+                enabled: true
+                dns: false
+                routers: true
+                ntp: false
+                mtu: false
+          dnsServers:
+          - "{{ tf_dc_private_ip }}"
+          dnsDomains:
+          - "{{ tf_dc_domain }}"
+          routes: []
+        gateway:
+          enabled: true
+          vpn:
+            allowDestinations:
+            - address: "{{ tf_vpc_private_subnet_cidr | replace('/24', '') }}"
+              netmask: 24
+              nic: eth0
+        ntp:
+          servers:
+          - hostname: 0.ubuntu.pool.ntp.org
+          - hostname: 1.ubuntu.pool.ntp.org
+          - hostname: 2.ubuntu.pool.ntp.org
+          - hostname: 3.ubuntu.pool.ntp.org
+        sshServer:
+          enabled: true
+          passwordAuthentication: false
+          allowSources:
+          - address: 0.0.0.0
+            netmask: 0
+          - address: "::"
+            netmask: 0
+    register: result
+    until: result.status == 200
+    retries: 30
+    delay: 10
+
+  - name: Export JSON Seed File
+    uri:
+      url: "{{ controller_api_url }}/appliances/{{ gateway_id }}/export"
+      method: POST
+      validate_certs: no
+      body_format: json
+      body: "{{ post_data | to_json }}"
+      timeout: 10
+      headers:
+       Accept: "application/vnd.appgate.peer-v14+json"
+       Authorization: "Bearer {{ apitoken }}"
+    vars:
+      post_data:
+        password: "Password123"
+    register: result
+    until: result.status == 200
+    retries: 30
+    delay: 10
+
+
+  - name: output to file
+    delegate_to: localhost
+    copy:
+      content: "{{ result.json }}"
+      dest: gateway01.json
+
+  - name: seed the appliance
+    copy:
+      src: gateway01.json
+      dest: /home/cz/seed.json
+      owner: cz
+      mode: 644
+
+  - name: Remove file local seed file
+    delegate_to: localhost
+    file:
+      path: gateway01.json
+      state: absent

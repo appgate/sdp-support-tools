@@ -1,0 +1,12 @@
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Vagrant directories
+**/.vagrant/*
+
+# mac ds_store
+.DS_Store

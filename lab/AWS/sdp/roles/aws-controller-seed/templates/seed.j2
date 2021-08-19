@@ -1,0 +1,164 @@
+{
+    "local": {
+        "registration": {
+            "adminPassword": "{{ sdpadmin_pw }}"
+        },
+        
+        "users": [
+            {
+                "username": "{{ sdpadmin_user }}"
+            }
+        ],
+        "version":  14
+    },
+    "remote": {
+        "clientInterface": {
+            "allowSources": [
+                {
+                    "address": "0.0.0.0",
+                    "netmask": 0
+                },
+                {
+                    "address": "::",
+                    "netmask": 0
+                }
+            ],
+            "dtlsPort": 443,
+            "hostname": "{{ tf_cnt1_public_dns }}",
+            "httpsPort": 443,
+	    "proxyProtocol": false
+        },
+        "controller": {
+            "database": {
+                "location": "internal"
+            },
+            "enabled": true
+        },
+	    "fips": false,
+        "gateway": {
+            "enabled": false
+        },
+        "geoIpUpdates": false,
+        "healthcheckServer": {
+            "allowSources": [
+                {
+                    "address": "0.0.0.0",
+                    "netmask": 0
+                },
+                {
+                    "address": "::",
+                    "netmask": 0
+                }
+            ],
+            "enabled": false,
+            "port": 5555
+        },
+        "hostname": "controller01.{{ tf_dc_domain }}",
+        "logServer": {
+            "enabled": true,
+            "retentionDays": 30
+        },
+        "hostname": "controller01.{{ tf_dc_domain }}",
+
+        "networking": {
+           "dnsServers": [
+             "{{ tf_dc_private_ip }}"
+           ],
+           "dnsDomains": [
+             "{{ tf_dc_domain }}"
+           ],
+            "hosts": [],
+            "nics": [
+                {
+                    "enabled": true,
+                    "ipv4": {
+                        "dhcp": {
+                            "dns": false,
+                            "enabled": true,
+                            "routers": true
+                        },
+                        "static": []
+                    },
+                    "ipv6": {
+                        "dhcp": {
+                            "enabled": false
+                        },
+                        "static": []
+                    },
+                    "name": "eth0"
+                }
+            ],
+            "routes": []
+        },
+        "ntp": {
+            "servers": [
+                {
+                    "hostname": "0.ubuntu.pool.ntp.org"
+                },
+                {
+                    "hostname": "1.ubuntu.pool.ntp.org"
+                },
+                {
+                    "hostname": "2.ubuntu.pool.ntp.org"
+                },
+                {
+                    "hostname": "3.ubuntu.pool.ntp.org"
+                }
+            ]
+        },
+        "peerInterface": {
+            "allowSources": [
+                {
+                    "address": "0.0.0.0",
+                    "netmask": 0
+                },
+                {
+                    "address": "::",
+                    "netmask": 0
+                }
+            ],
+            "hostname": "controller01.{{ tf_dc_domain }}",
+            "httpsPort": 8443
+        },
+        "peers": {
+            "controllers": [],
+            "gateways": [],
+            "logServers": []
+        },
+	"ping": {
+            "allowSources": [
+                {
+                    "address": "0.0.0.0",
+                    "netmask": 0
+                },
+                {
+                    "address": "::",
+                    "netmask": 0
+                }
+            ]
+        },
+        "rsyslogDestinations": [],
+        "snmpServer": {
+            "enabled": false
+        },
+        "spa": {
+            "mode": "TCP"
+        },
+        "sshServer": {
+            "allowSources": [
+                {
+                    "address": "0.0.0.0",
+                    "netmask": 0
+                },
+                {
+                    "address": "::",
+                    "netmask": 0
+                }
+            ],
+            "enabled": true,
+            "port": 22
+        },
+        "version":  14
+    }
+}
+

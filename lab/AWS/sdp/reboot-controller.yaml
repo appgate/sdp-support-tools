@@ -1,0 +1,51 @@
+---
+- hosts: primary_controller
+  gather_facts: no
+  vars_files:
+    - config.cfg
+    - ../windowsDC/tf_ansible_vars_file.yml
+    - tf_ansible_vars_file.yml
+    - api.yml
+  vars:
+    controller_api_url: "https://{{ tf_cnt1_public_ip }}:8443/admin"
+
+  tasks:
+       
+  - name:  Wait for UI to come up
+    wait_for:
+      port: 8443
+      state: started
+
+  
+  - name: Get Controller ID
+    uri:
+      url: "{{ controller_api_url }}/stats/appliances"
+      method: GET
+      validate_certs: no
+      body_format: json
+      body: ""
+      timeout: 10
+      headers:
+        Accept: "application/vnd.appgate.peer-v14+json"
+        Authorization: "Bearer {{ apitoken }}"
+    register: result
+    until:
+      - result.status == 200
+    retries: 30
+    delay: 10
+
+
+  - name: Restart Controller
+    uri:
+      url: "{{ controller_api_url }}/appliances/{{ result.json.data[0].id }}/reboot"
+      method: POST
+      validate_certs: no
+      body_format: json
+      body: "{}"
+      timeout: 15
+      headers:
+        Accept: "application/vnd.appgate.peer-v14+json"
+        Authorization: "Bearer {{ apitoken }}"
+    ignore_errors: yes
+#    register: result
+

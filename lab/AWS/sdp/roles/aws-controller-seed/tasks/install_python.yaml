@@ -1,0 +1,11 @@
+---
+
+- name: Wait 300 seconds for target connection to become reachable/usable
+  wait_for_connection:
+    timeout: 300
+
+- name: verify python is installed
+  become: yes
+  become_method: sudo
+  raw: test -e /usr/bin/python || (apt -y update && apt install -y python)
+  tags: configure
