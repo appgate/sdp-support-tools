@@ -4,6 +4,10 @@
 # .tfstate files
 *.tfstate
 *.tfstate.*
+*.terraform.lock.hcl
+
+generated_vars.tf
+tf_ansible_vars_file.yml
 
 # Vagrant directories
 **/.vagrant/*
