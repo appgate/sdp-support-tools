@@ -14,3 +14,7 @@ tf_ansible_vars_file.yml
 
 # mac ds_store
 .DS_Store
+
+api.yml
+hosts
+profile.txt

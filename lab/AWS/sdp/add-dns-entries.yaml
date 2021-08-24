@@ -4,7 +4,6 @@
   vars_files:
     - ../windowsDC/tf_ansible_vars_file.yml
     - tf_ansible_vars_file.yml
-    - api.yml
 
   tasks:  
 

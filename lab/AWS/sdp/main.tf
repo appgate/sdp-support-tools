@@ -13,7 +13,7 @@ data "terraform_remote_state" "vpc" {
 resource "aws_instance" "appgate-controller" {
   count         = "${var.controller_instance_count}"
   ami           = "${var.sdp_ami}"
-  instance_type = "t3.large"
+  instance_type = "t3.medium"
   key_name = "${var.keyname}"
   subnet_id = "${data.terraform_remote_state.vpc.outputs.SDP-public-subnet-id}"
   security_groups = ["${data.terraform_remote_state.vpc.outputs.SDP-SG-id}"]
